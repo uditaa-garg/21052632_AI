@@ -1,59 +1,51 @@
-import numpy as np
 import random
-import copy
-import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image, ImageDraw
 
-# Define your parameters
-N = 100  # Population size
-h, w = 200, 200  # Canvas dimensions
-num_generations = 100
-mutation_rate = 0.1
+# Define the canvas dimensions
+width = 400
+height = 400
 
-# Define a class to represent a square
-class Square:
-    def __init__(self):
-        self.x = random.randint(0, w)
-        self.y = random.randint(0, h)
-        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        self.opacity = random.uniform(0.1, 1.0)
+# Define the number of squares in the population
+population_size = 50
 
-# Initialize the canvas and population
-canvas = np.zeros((h, w, 3), dtype=np.uint8)
-population = [Square() for _ in range(N)]
+# Create a blank canvas
+canvas = Image.new('RGB', (width, height), (255, 255, 255))
 
-# Define an objective function to evaluate the fitness
-def objective_function(canvas, target_image):
-    # Implement your fitness evaluation logic here
-    # You can compare the canvas with the target image and return a fitness score
-    pass
+# Create a drawing object
+draw = ImageDraw.Draw(canvas)
 
-# Main loop
-for generation in range(num_generations):
-    # Evaluate the fitness of each square in the population
-    fitness_scores = []
-    for square in population:
-        # Create a copy of the canvas and draw the square
-        canvas_copy = copy.deepcopy(canvas)
-        # Draw the square on canvas_copy
-        # ...
-        fitness = objective_function(canvas_copy, target_image)
-        fitness_scores.append(fitness)
-    
-    # Selection: Choose the top N squares based on fitness
-    selected_indices = np.argsort(fitness_scores)[:N]
-    new_population = [population[i] for i in selected_indices]
+# Function to draw a square
+def draw_square(draw, x, y, size, color):
+    draw.rectangle([x, y, x + size, y + size], fill=color)
 
-    # Crossover: Implement your crossover logic here
-    # ...
+# Define the population of squares
+population = []
+for _ in range(population_size):
+    x = random.randint(0, width - 20)
+    y = random.randint(0, height - 20)
+    size = random.randint(10, 50)
+    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    population.append((x, y, size, color))
 
-    # Mutation: Implement your mutation logic here
-    for square in new_population:
-        if random.random() < mutation_rate:
-            # Apply mutation to the square
-            # ...
+# Function to evaluate the fitness of an image
+def evaluate_fitness(canvas, target_image):
+    # Convert images to NumPy arrays for pixel-wise comparison
+    canvas_array = np.array(canvas)
+    target_array = np.array(target_image)
+    diff = np.abs(canvas_array - target_array)
+    fitness = np.sum(diff)
+    return fitness
 
-    population = new_population
+# Create a target image (your input image)
+target_image = Image.open("ai\pepsi.jpg")
 
-# Display the final generated image
-plt.imshow(canvas)
-plt.show()
+# Main evolution loop (crossover, mutation, selection) goes here
+
+# Render the best square configuration
+best_configuration = population[0]  # Replace this with your selection logic
+x, y, size, color = best_configuration
+draw_square(draw, x, y, size, color)
+
+# Save the generated image to a file
+canvas.save('generated_image.png')
